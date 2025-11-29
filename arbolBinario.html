@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbol Binario</title>
+</head>
+<body>
+    <script>
+        // *SOBRE EL PROYECTO*
+        /* 
+            Creo que fue un proyecto muy interesante que nos reto a pensar en la creacion y funcionamiento de un arbol binario
+            (un tema del cual personalmente no habia escuchado o tenia un leve recuerdo de haberlo escuchado) habiendo aprendido
+            conceptos escenciales de la materia, y, finalmente llevandolo a la pratica con este proyecto. Fue un proyecto retador
+            en lo personal, especialmente considerando el tiempo ajustado debido a otras tareas y examenes; sin embargo, ya habiendo
+            terminado el proyecto pude darme una mejor idea del mismo, dandome cuenta que en realidad se trataba de algo simple, aun si
+            la creacion del codigo (el analisis) no lo fue tanto. Estuve aproximadamente 10 horas trabajandolo y se sintio muy bien
+            cuando el codigo finalmente funciono, y aunque no me encanto el resultado, ya que considero que podria haberse simplificado
+            un poco mas o haberlo hecho mucho mas optimo o incluso bonito, creo que fue un avance decente para mi, ya que utilice
+            por primera vez la recursion, utilice por primera vez los conceptos de listas enlazadas en un proyecto 
+            (en este caso doblemente enlazadas) pude entender mucho mejor el uso de las clases y lo que considero mi mayor logro:
+            haber solucionado un problema por mi cuenta en un tiempo considerablemente corto (sin que sea un desastre tan terrible).
+            Ame la materia y espero en el futuro seguir trabajando en proyectos de este estilo, aunque me termine doliendo la cabeza. Gracias.
+        */
+
+
+        // *SOBRE EL CODIGO*
+        // Funcion PreOrder 
+        /* La funcion recibe una ecuación vacia para utilizarla en el proceso regresandola con el resultado final
+            y la raiz del arbol binario para trabajar con los nodos, en este caso llamandolo como "indice" para una
+            mejor referencia. La funcion utiliza principalmente la propiedad "agregado" para evitar repetir los nodos
+            que ya han sido procesados. Se agrega el "null" en las condicionales para evitar que la funcion se "salga"
+            del arbol binario.
+        */
+        function preOrder(ecuacion, indice){
+            if(indice.agregado == false){ // Si el nodo seleccionado no ha sido agregado a la ecuación, entonces lo agrega.
+                ecuacion += indice.valor;
+                indice.agregado = true;
+                return preOrder(ecuacion, indice);
+            }else if(indice.izq != null && indice.izq.agregado == false){ // Si se cumple con la condicion el indice se recorre a la izquierda.
+                indice = indice.izq;
+                return preOrder(ecuacion, indice);
+            }else if(indice.der != null && indice.der.agregado == false){ // Si se cumple la condicion el indice se recorre a la derecha.
+                indice = indice.der;
+                return preOrder(ecuacion, indice); 
+            }else if(indice.ant != null){ // Si se cumple la condicion el indice se recorre hacia atras.
+                indice = indice.ant;
+                return preOrder(ecuacion, indice);
+            }else{
+                return ecuacion; // Si ninguna condicion se cumple se regresa la ecuación.
+            }
+        }
+        // Funcion PostOrder 
+        /* 
+            Hace practicamente lo mismo que la funcion preOrder moviendo solo una de las condicionales
+            para cambiar su comportamiento al indicado.
+        */
+        function postOrder(ecuacion, indice){
+            if(indice.izq != null && indice.izq.agregado == false){
+                indice = indice.izq;
+                return postOrder(ecuacion, indice);
+            }else if(indice.der != null && indice.der.agregado == false){
+                indice = indice.der;
+                return postOrder(ecuacion, indice);
+            }else if(indice.agregado == false){
+                ecuacion += indice.valor;
+                indice.agregado = true;
+                return postOrder(ecuacion, indice);
+            }else if(indice.ant != null){
+                indice = indice.ant;
+                return postOrder(ecuacion, indice);
+            }else{
+                return ecuacion;
+            }
+        }
+        // Funcion para las operaciones con una ecuacion en formato preOrder.
+        // Se recibe como parametro la ecuacion de la funcion preOrder
+        function preOrderOperation(ecuacion){
+            // Se crean variables para el procedimiento de la funcion, "auxArray" sirviendo para apoyarse en las operaciones.
+            let auxArray = [];
+            let resultado = 0;
+
+            /* 
+                Se utiliza un bucle para procesar la ecuacion preOrder, i siendo el contador de la ecuacion y
+                j siendo el contador del array auxiliar (auxArray), ya que en el formato preOrder debemos sacar los datos
+                en pilas (LIFO). Al cumplir con un case en el switch los valores de la operacion a realizar y operandose
+                se mete el resultado al array y se eliminan los datos recientemente usados en la operacion,
+                restandole al contador las posiciones eliminadas para continuar con el progreso correcto.
+                En el caso de default se ejecutara cuando el valor detectado no sea una operando sino un numero.
+                Y asi continuara hasta acabar con la ecuacion.
+            */
+            for(let i = ecuacion.length-1, j = 0; i >= 0; i--, j++){
+                switch(ecuacion.charAt(i)){
+                    case '/':
+                        auxArray.push(parseInt(auxArray[j-1]/auxArray[j-2]));
+                        auxArray.splice(j-1, 1);
+                        auxArray.splice(j-2, 1);
+                        j -= 2;
+                        break;
+                    case '*':
+                        auxArray.push(parseInt(auxArray[j-1]*auxArray[j-2]))
+                        auxArray.splice(j-1, 1);
+                        auxArray.splice(j-2, 1);
+                        j -= 2;
+                        break;
+                    case '+':
+                        auxArray.push(parseInt(auxArray[j-1]+auxArray[j-2]))
+                        auxArray.splice(j-1, 1);
+                        auxArray.splice(j-2, 1);
+                        j -= 2;
+                        break;
+                    case '-':
+                        auxArray.push(parseInt(auxArray[j-1]-auxArray[j-2]))
+                        auxArray.splice(j-1, 1);
+                        auxArray.splice(j-2, 1);
+                        j -= 2;
+                        break;
+                    default:
+                        auxArray.push(parseInt(ecuacion.charAt(i)));
+                        break;
+                }
+            }
+            resultado = auxArray[0]; // Convierte el unico valor del array en el resultado.
+            return resultado;
+        }
+        // Funcion para las operaciones con una ecuacion en formato postOrder.
+        /*
+            Hace practicamente lo mismo que la de preOrder,
+            con la diferencia de que i no necesita empezar desde el ultimo valor,
+            ya que en el formato preOrder se sacan los datos en colas (FIFO).
+        */
+         function postOrderOperation(ecuacion){
+            let auxArray = [];
+            let resultado = 0;
+
+                for(let i = 0, j = 0; i < ecuacion.length; i++, j++){
+                switch(ecuacion.charAt(i)){
+                    case '/':
+                        auxArray.push(parseInt(auxArray[j-2]/auxArray[j-1]));
+                        auxArray.splice(j-1, 1);
+                        auxArray.splice(j-2, 1);
+                        j -= 2;
+                        break;
+                    case '*':
+                        auxArray.push(parseInt(auxArray[j-2]*auxArray[j-1]));
+                        auxArray.splice(j-1, 1);
+                        auxArray.splice(j-2, 1);
+                        j -= 2;
+                        break;
+                    case '+':
+                        auxArray.push(parseInt(auxArray[j-2]+auxArray[j-1]));
+                        auxArray.splice(j-1, 1);
+                        auxArray.splice(j-2, 1);
+                        j -= 2;
+                        break;
+                    case '-':
+                        auxArray.push(parseInt(auxArray[j-2]-auxArray[j-1]));
+                        auxArray.splice(j-1, 1);
+                        auxArray.splice(j-2, 1);
+                        j -= 2;
+                        break;
+                    default:
+                        auxArray.push(parseInt(ecuacion.charAt(i)));
+                        break;
+                }
+            }
+            resultado = auxArray[0];
+            return resultado;
+        }
+        // Clase del arbol binario
+        class ArbolBinario{
+            constructor(){
+                this.raiz = null; // Se asigna la raiz para el control del arbol.
+            }
+            // El metodo construir "construye" el arbol con los nodos "valores de la ecuacion".
+            construir(ecuacion){
+                /* 
+                    Se crean variables para el procedimiento de la funcion, "auxArray" sirviendo para el proceso de "construccion",
+                    y "temp" para la seleccion temporal de los nodos.
+                */
+                let auxArray = [];
+                let temp = null;
+
+                for(let i = 0; i < ecuacion.length; i++){ // Transforma la ecuacion a un array con nodos.
+                    auxArray[i] = new Nodo(ecuacion.charAt(i));
+                }
+                for(let i = 0; i < auxArray.length; i++){ // Crea el orden para los operandos / y *.
+                    if(auxArray[i].valor == '/' || auxArray[i].valor == '*'){
+                        temp = auxArray[i];
+                        this.raiz = temp;
+                        temp.izq = auxArray[i-1];
+                        temp.izq.ant = temp;
+                        temp.der = auxArray[i+1];
+                        temp.der.ant = temp;
+                        auxArray.splice(i+1, 1);
+                        auxArray.splice(i-1, 1);
+                        i -= 1;
+                    }
+                }
+                for(let i = 0; i < auxArray.length; i++){ // Crea el orden para los operandos + y -.
+                    if(auxArray[i].valor == '+' || auxArray[i].valor == '-'){
+                        temp = auxArray[i];
+                        this.raiz = temp;
+                        temp.izq = auxArray[i-1];
+                        temp.izq.ant = temp;
+                        temp.der = auxArray[i+1];
+                        temp.der.ant = temp;
+                        auxArray.splice(i+1, 1);
+                        auxArray.splice(i-1, 1);
+                        i -= 1;
+                    }
+                }
+                return this.raiz; // Regresa la raiz como referencia.
+            }
+        }
+        // Clase para los nodos "valores de la ecuacion".
+        class Nodo{
+            // Propiedades para el control de los nodos.
+            constructor(valor){
+                this.valor = valor;
+                this.der = null;
+                this.izq = null;
+                this.ant = null;
+                this.agregado = false;
+            }
+        }
+
+        let miArbolBinario = new ArbolBinario(); // Se crea la variable con el arbol binario.
+        let resultado = ""; // Se crea la variable donde ira el resultado.
+        let miEcuacion = prompt("Introduce una ecuacion: "); // Se crea la variable donde ira la ecuacion a operar.
+        let ecuacion = ""; // Se crea la variable vacia para las funciones preOrder y postOrder.
+
+        miArbolBinario.construir(miEcuacion); // Se "construye" el arbol binario con la ecuacion introducida.
+
+        let ecuacionPreOrder = preOrder(ecuacion, miArbolBinario.raiz); // Se ejecuta el arbol binario en formato preOrder.
+        console.log("PreOrder: " + ecuacionPreOrder); 
+        resultado = preOrderOperation(ecuacionPreOrder); // Se ejecuta la ecuacion en formato preOrder.
+        console.log("Resultado PreOrder: " + resultado);
+
+        miArbolBinario.construir(miEcuacion); // Se vuelve a "construir" el arbol binario con la ecuacion introducida.
+
+        let ecuacionPostOrder = postOrder(ecuacion, miArbolBinario.raiz); // Se ejecuta el arbol binario en formato postOrder.
+        console.log("PostOrder: " + ecuacionPostOrder);
+        resultado = postOrderOperation(ecuacionPostOrder); // Se ejecuta la ecuacion en formato postOrder.
+        console.log("Resultado PostOrder: " + resultado);
+    </script>
+</body>
+</html>
